@@ -4,14 +4,14 @@ const db = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
-    database: "db_absensi"
+    database: "absensi"
 });
 
-db.connect((err) => {
-    if (err) {
-        console.log("Koneksi database gagal", err);
-    } else {
-        console.log("Koneksi database berhasil");
+db.connect((err)=>{
+    if(err){
+        console.log(err);
+    }else{
+        console.log("Database Connected");
     }
 });
 

@@ -8,11 +8,11 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "mysql2": "^3.21.0"
-  }
+    "mysql2": "^3.22.0"
+  },
+  "description": ""
 }
