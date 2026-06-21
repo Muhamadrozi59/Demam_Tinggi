@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Register = () => {
-  const [formData, setFormData] = useState({ nama: "", email: "", password: "", role: "user" });
-  const navigate = useNavigate(); // Di sini posisi yang benar
+export default function Register() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,31 +24,98 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Register berhasil!");
+        alert("Registrasi Berhasil! Silakan Login.");
         navigate("/login");
       } else {
-        alert("Gagal: " + data.message);
+        alert("Gagal: " + (data.message || JSON.stringify(data)));
       }
     } catch (error) {
-     alert("Gagal: " + (data.message || JSON.stringify(data)));
+      alert("Server backend mati!");
     }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="nama" placeholder="Nama" onChange={handleChange} required /><br/><br/>
-        <input type="email" name="email" placeholder="Email" onChange={handleChange} required /><br/><br/>
-        <input type="password" name="password" placeholder="Password" onChange={handleChange} required /><br/><br/>
-        <select name="role" onChange={handleChange}>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select><br/><br/>
-        <button type="submit">Daftar</button>
-      </form>
+    <div style={{
+      minHeight: "100vh",
+      backgroundColor: "#3f51b5", // Warna biru indigo biar serasi
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      fontFamily: "'Inter', sans-serif",
+      padding: "20px"
+    }}>
+      <div style={{
+        backgroundColor: "white",
+        width: "100%",
+        maxWidth: "400px",
+        borderRadius: "20px",
+        padding: "30px",
+        boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+        color: "#333"
+      }}>
+        <h2 style={{ textAlign: "center", marginBottom: "25px", color: "#3f51b5", fontWeight: "bold" }}>Daftar Akun</h2>
+        
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+          <div>
+            <label style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>Username</label>
+            <input 
+              type="text" 
+              name="username" 
+              placeholder="Masukkan username" 
+              onChange={handleChange} 
+              required 
+              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ccc", marginTop: "5px", boxSizing: "border-box" }}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>Email</label>
+            <input 
+              type="type" 
+              name="email" 
+              placeholder="Masukkan email" 
+              onChange={handleChange} 
+              required 
+              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ccc", marginTop: "5px", boxSizing: "border-box" }}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>Password</label>
+            <input 
+              type="password" 
+              name="password" 
+              placeholder="Masukkan password" 
+              onChange={handleChange} 
+              required 
+              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ccc", marginTop: "5px", boxSizing: "border-box" }}
+            />
+          </div>
+
+          <button type="submit" style={{
+            width: "100%",
+            backgroundColor: "#3f51b5",
+            color: "white",
+            border: "none",
+            padding: "14px",
+            borderRadius: "8px",
+            fontSize: "16px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            marginTop: "10px"
+          }}>
+            Daftar Sekarang
+          </button>
+        </form>
+
+        <div style={{ textAlign: "center", fontSize: "14px", color: "#666", marginTop: "20px" }}>
+          Sudah punya akun?{" "}
+          <span onClick={() => navigate("/login")} style={{ color: "#3f51b5", fontWeight: "bold", cursor: "pointer" }}>
+            Login
+          </span>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Register;
+}
