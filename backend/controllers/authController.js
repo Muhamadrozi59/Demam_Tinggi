@@ -8,6 +8,7 @@ const SECRET_KEY = "secret123";
 exports.register = async (req, res) => {
     console.log("MASUK AUTH REGISTER"); 
     try {
+        console.log(req.body);
         const { nama, email, password, role } = req.body;
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -57,9 +58,13 @@ exports.login = (req, res) => {
                 { expiresIn: "1h" }
             );
 
-            res.json({ message: "Login berhasil", token, id: user.id,
-    nama: user.nama,
-    role: user.role });
+            res.json({
+  message: "Login berhasil",
+  token,
+  id: user.id,
+  nama: user.nama,
+  role: user.role
+});
         }
     );
 };

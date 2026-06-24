@@ -192,14 +192,10 @@ const handleDelete = async (id) => {
   }
 };
 
-const handleEdit = async (id) => {
-  const waktuBaru = prompt("Masukkan waktu baru (HH:MM:SS)");
-
-  if (!waktuBaru) return;
+const handleEdit = async (id, statusBaru) => {
+  const item = riwayat.find((r) => r.id === id);
 
   try {
-    const item = riwayat.find((r) => r.id === id);
-
     const response = await fetch(
       `http://localhost:3000/absensi/${id}`,
       {
@@ -210,7 +206,8 @@ const handleEdit = async (id) => {
         body: JSON.stringify({
           user_id: item.user_id,
           tanggal: item.tanggal.split("T")[0],
-          waktu: waktuBaru
+          waktu: item.waktu,
+          status: statusBaru
         })
       }
     );
@@ -218,10 +215,8 @@ const handleEdit = async (id) => {
     const result = await response.json();
 
     if (result.status === "success") {
-      alert("Data berhasil diupdate");
       loadRiwayat();
-    } else {
-      alert(result.message);
+      alert("Status berhasil diubah");
     }
   } catch (error) {
     console.error(error);
@@ -242,8 +237,29 @@ const handleEdit = async (id) => {
         <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
           <div style={{ width: "50px", height: "50px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.2)", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "24px" }}>👤</div>
           <div>
-            <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "bold", textTransform: "uppercase" }}>{namaUser}</h3>
-            <p style={{ margin: "2px 0 0 0", fontSize: "13px", opacity: 0.9 }}>Mahasiswa - Teknik Informatika</p>
+            <h3
+  style={{
+    margin: 0,
+    fontSize: "18px",
+    fontWeight: "bold",
+    textTransform: "uppercase"
+  }}
+>
+  {namaUser}
+</h3>
+
+<p
+  style={{
+    margin: "5px 0 0 0",
+    fontSize: "13px",
+    opacity: 0.95,
+    fontWeight: "500"
+  }}
+>
+  {role === "admin"
+    ? "👨‍🏫 Dosen STT Terpadu Nurul Fikri"
+    : "🎓 Mahasiswa STT Terpadu Nurul Fikri"}
+</p>
           </div>
         </div>
 
@@ -468,42 +484,39 @@ const handleEdit = async (id) => {
     </p>
   </div>
 
-  <span
-    style={{
-      backgroundColor: "#dcfce7",
-      color: "#166534",
-      padding: "6px 12px",
-      borderRadius: "20px",
-      fontSize: "12px",
-      fontWeight: "bold"
-    }}
-  >
-    Hadir
-  </span>
+  
 </div>
 
-      <button
-  onClick={() => handleEdit(item.id)}
+      <select
+  value={item.status}
+  onChange={(e) =>
+    handleEdit(item.id, e.target.value)
+  }
   style={{
-    backgroundColor: "#3f51b5",
-    color: "white",
-    border: "none",
-    padding: "8px 12px",
-    borderRadius: "6px",
+    padding: "8px",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
     marginRight: "10px"
   }}
 >
-  ✏️ Edit
-</button>
+  <option value="Hadir">
+    ✅ Hadir
+  </option>
 
-      <button
+  <option value="Sakit">
+    🤒 Sakit
+  </option>
+</select>
+
+<button
   onClick={() => handleDelete(item.id)}
   style={{
     backgroundColor: "#ef4444",
     color: "white",
     border: "none",
     padding: "8px 12px",
-    borderRadius: "6px"
+    borderRadius: "6px",
+    cursor: "pointer"
   }}
 >
   🗑️ Hapus

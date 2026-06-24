@@ -6,11 +6,11 @@ export default function Register() {
   
   // 1. Tambahkan role: "mahasiswa" sebagai default di dalam state
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    role: "mahasiswa" 
-  });
+  nama: "",
+  email: "",
+  password: "",
+  role: "user"
+});
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -64,8 +64,8 @@ export default function Register() {
             <label style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>Username</label>
             <input 
               type="text" 
-              name="username" 
-              placeholder="Masukkan username" 
+              name="nama" 
+              placeholder="Masukkan nama" 
               onChange={handleChange} 
               required 
               style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ccc", marginTop: "5px", boxSizing: "border-box" }}
@@ -99,15 +99,14 @@ export default function Register() {
           {/* 2. INPUT PILIHAN ROLE (BIAR GA ERROR PAS DAFTAR) */}
           <div>
             <label style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>Daftar Sebagai</label>
-            <select 
-              name="role" 
-              value={formData.role} 
-              onChange={handleChange}
-              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ccc", marginTop: "5px", backgroundColor: "white", fontSize: "14px", color: "#333" }}
-            >
-              <option value="mahasiswa">Mahasiswa</option>
-              <option value="dosen">Dosen</option>
-            </select>
+            <select
+  name="role"
+  value={formData.role}
+  onChange={handleChange}
+>
+  <option value="user">Mahasiswa</option>
+  <option value="admin">Dosen</option>
+</select>
           </div>
 
           <button type="submit" style={{
