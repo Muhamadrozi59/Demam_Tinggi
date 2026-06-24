@@ -5,6 +5,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("beranda");
   const [namaUser, setNamaUser] = useState("Mahasiswa");
+  const [role, setRole] = useState("");
 
   // State Utama Status Presensi Global
   const [statusPresensi, setStatusPresensi] = useState("Alpa"); // Default awal sebelum isi adalah Alpa
@@ -23,11 +24,38 @@ export default function Dashboard() {
 
   // State Surat Dokter (Untuk Sakit)
   const [suratDokter, setSuratDokter] = useState(null);
+  const [riwayat, setRiwayat] = useState([]);
 
-  useEffect(() => {
-    const namaDisimpan = localStorage.getItem("namaUser") || "Mahasiswa";
-    setNamaUser(namaDisimpan);
-  }, []);
+ useEffect(() => {
+  const namaDisimpan =
+    localStorage.getItem("namaUser") || "Mahasiswa";
+
+  const roleDisimpan =
+    localStorage.getItem("role") || "user";
+
+  setNamaUser(namaDisimpan);
+  setRole(roleDisimpan);
+
+  loadRiwayat();
+}, []);
+
+const loadRiwayat = async () => {
+  try {
+    const userId = localStorage.getItem("user_id");
+
+    const response = await fetch(
+      `http://localhost:3000/absensi/riwayat/${userId}`
+    );
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      setRiwayat(result.data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   // Fungsi untuk Menyalakan Kamera
   const nyalakanKamera = async () => {
@@ -87,31 +115,118 @@ export default function Dashboard() {
   };
 
   // Fungsi Kirim Semua Data Kehadiran
-  const handleKirimKehadiran = (e) => {
-    e.preventDefault();
-    
-    // Validasi kondisional berdasarkan pilihan status
-    if (pilihanStatus === "Hadir" && !fotoSelfie) {
-      alert("Wajib mengambil foto selfie di kelas terlebih dahulu sebagai bukti Hadir!");
-      return;
+  const handleKirimKehadiran = async (e) => {
+  e.preventDefault();
+
+  if (pilihanStatus === "Hadir" && !fotoSelfie) {
+    alert("Wajib mengambil foto selfie terlebih dahulu!");
+    return;
+  }
+
+  if (pilihanStatus === "Sakit" && !suratDokter) {
+    alert("Wajib mengunggah Surat Dokter!");
+    return;
+  }
+
+  try {
+  const now = new Date();
+
+  const waktu =
+    String(now.getHours()).padStart(2, "0") +
+    ":" +
+    String(now.getMinutes()).padStart(2, "0") +
+    ":" +
+    String(now.getSeconds()).padStart(2, "0");
+
+  const response = await fetch(
+    "http://localhost:3000/absensi",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_id: Number(localStorage.getItem("user_id")),
+        tanggal: new Date().toISOString().split("T")[0],
+        waktu: waktu
+      })
     }
-    
-    if (pilihanStatus === "Sakit" && !suratDokter) {
-      alert("Wajib mengunggah foto/file Surat Dokter sebagai bukti Sakit!");
-      return;
+  );
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      setStatusPresensi(pilihanStatus);
+
+      alert("Presensi berhasil disimpan");
+
+      setFotoSelfie(null);
+      setSuratDokter(null);
+      setKelas("");
+
+      loadRiwayat();
     }
-    
-    // Jalankan pengiriman
-    alert(`Presensi Berhasil Dikirim!\nKelas: ${kelas}\nJadwal: ${jadwal}\nStatus: ${pilihanStatus}`);
-    
-    // Mengubah status global secara otomatis sesuai yang diisi
-    setStatusPresensi(pilihanStatus); 
-    
-    // Reset Form
-    setFotoSelfie(null);
-    setSuratDokter(null);
-    setKelas("");
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Gagal menyimpan absensi");
+  }
+};
+
+const handleDelete = async (id) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/absensi/${id}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      alert("Data berhasil dihapus");
+      loadRiwayat();
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleEdit = async (id) => {
+  const waktuBaru = prompt("Masukkan waktu baru (HH:MM:SS)");
+
+  if (!waktuBaru) return;
+
+  try {
+    const item = riwayat.find((r) => r.id === id);
+
+    const response = await fetch(
+      `http://localhost:3000/absensi/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: item.user_id,
+          tanggal: item.tanggal.split("T")[0],
+          waktu: waktuBaru
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      alert("Data berhasil diupdate");
+      loadRiwayat();
+    } else {
+      alert(result.message);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const handleLogout = () => {
     matikanKamera();
@@ -131,6 +246,7 @@ export default function Dashboard() {
             <p style={{ margin: "2px 0 0 0", fontSize: "13px", opacity: 0.9 }}>Mahasiswa - Teknik Informatika</p>
           </div>
         </div>
+
 
         {/* CARD STATUS PRESENSI OTOMATIS */}
         <div style={{ backgroundColor: "white", color: "#333", borderRadius: "15px", padding: "15px 20px", marginTop: "25px", boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
@@ -178,8 +294,9 @@ export default function Dashboard() {
                   <select value={kelas} onChange={(e) => setKelas(e.target.value)} required style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", backgroundColor: "white", fontSize: "14px", color: "#333", outline: "none" }}>
                     <option value="" disabled>-- Pilih Kelas Kuliah --</option>
                     <option value="Pemrograman Web">Pemrograman Web (TI-Semester 4)</option>
-                    <option value="Kecerdasan Buatan">Kecerdasan Buatan (TI-Semester 4)</option>
+                    <option value="Kecerdasan Artificial">Kecerdasan Artificial (TI-Semester 4)</option>
                     <option value="Jaringan Komputer">Jaringan Komputer (TI-Semester 4)</option>
+                    <option value="FullStack">FullStack (TI-Semester 4)</option>
                   </select>
                 </div>
 
@@ -251,15 +368,195 @@ export default function Dashboard() {
               </form>
             </div>
           </div>
-        ) : (
-          /* TAB AKUN */
-          <div style={{ backgroundColor: "white", padding: "25px", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", textAlign: "center" }}>
-            <h4 style={{ margin: "0 0 10px 0", color: "#333" }}>Manajemen Akun</h4>
-            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>Kamu login sebagai <strong>{namaUser}</strong></p>
-            <button onClick={handleLogout} style={{ width: "100%", backgroundColor: "#e11d48", color: "white", border: "none", padding: "12px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer" }}>Keluar / Logout</button>
-          </div>
-        )}
-      </div>
+        
+          ) : activeTab === "riwayat" ? (
+
+  <div
+    style={{
+      backgroundColor: "white",
+      padding: "20px",
+      borderRadius: "12px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+    }}
+  >
+   <h3>📋 Rekap Kehadiran</h3>
+
+    {riwayat.length === 0 ? (
+      <p>Belum ada riwayat absensi.</p>
+    ) : (
+      riwayat.map((item) => (
+        <div
+          key={item.id}
+          style={{
+  backgroundColor: "#f8fafc",
+  borderRadius: "12px",
+  padding: "15px",
+  marginBottom: "12px",
+  border: "1px solid #e2e8f0"
+}}
+        >
+          <p>
+📅 {new Date(item.tanggal).toLocaleDateString("id-ID", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric"
+})}
+</p>
+
+<p>
+⏰ {item.waktu}
+</p>
+        </div>
+      ))
+    )}
+  </div>
+
+) : activeTab === "admin" ? (
+
+<div
+  style={{
+    backgroundColor: "white",
+    padding: "20px",
+    borderRadius: "12px"
+  }}
+>
+  <h3>🎓 Manajemen Kehadiran Mahasiswa</h3>
+
+  {riwayat.map((item) => (
+    <div
+  key={item.id}
+  style={{
+    backgroundColor: "white",
+    borderRadius: "15px",
+    padding: "15px",
+    marginBottom: "15px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+    border: "1px solid #e2e8f0"
+  }}
+>
+     <div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "10px"
+  }}
+>
+  <div>
+    <p
+      style={{
+        margin: 0,
+        fontWeight: "bold",
+        color: "#334155"
+      }}
+    >
+      📅 {new Date(item.tanggal).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      })}
+    </p>
+
+    <p
+      style={{
+        margin: "5px 0 0 0",
+        color: "#64748b",
+        fontSize: "14px"
+      }}
+    >
+      ⏰ {item.waktu}
+    </p>
+  </div>
+
+  <span
+    style={{
+      backgroundColor: "#dcfce7",
+      color: "#166534",
+      padding: "6px 12px",
+      borderRadius: "20px",
+      fontSize: "12px",
+      fontWeight: "bold"
+    }}
+  >
+    Hadir
+  </span>
+</div>
+
+      <button
+  onClick={() => handleEdit(item.id)}
+  style={{
+    backgroundColor: "#3f51b5",
+    color: "white",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    marginRight: "10px"
+  }}
+>
+  ✏️ Edit
+</button>
+
+      <button
+  onClick={() => handleDelete(item.id)}
+  style={{
+    backgroundColor: "#ef4444",
+    color: "white",
+    border: "none",
+    padding: "8px 12px",
+    borderRadius: "6px"
+  }}
+>
+  🗑️ Hapus
+</button>
+    </div>
+  ))}
+</div>
+
+) : (
+
+  <div
+    style={{
+      backgroundColor: "white",
+      padding: "25px",
+      borderRadius: "12px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+      textAlign: "center"
+    }}
+  >
+    <h4 style={{ margin: "0 0 10px 0", color: "#333" }}>
+      Manajemen Akun
+    </h4>
+
+    <p
+      style={{
+        fontSize: "14px",
+        color: "#666",
+        marginBottom: "20px"
+      }}
+    >
+      Kamu login sebagai <strong>{namaUser}</strong>
+    </p>
+
+    <button
+      onClick={handleLogout}
+      style={{
+        width: "100%",
+        backgroundColor: "#e11d48",
+        color: "white",
+        border: "none",
+        padding: "12px",
+        borderRadius: "8px",
+        fontWeight: "bold",
+        cursor: "pointer"
+      }}
+    >
+      Keluar / Logout
+    </button>
+  </div>
+
+)}
+
+</div>
 
       {/* --- BOTTOM NAVIGATION BAR --- */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: "65px", backgroundColor: "white", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "space-around", alignItems: "center", boxShadow: "0 -2px 10px rgba(0,0,0,0.05)" }}>
@@ -267,6 +564,45 @@ export default function Dashboard() {
           <div style={{ fontSize: "20px" }}>🏠</div>
           <div style={{ fontSize: "12px", marginTop: "2px" }}>Beranda</div>
         </div>
+        <div
+  onClick={() => setActiveTab("riwayat")}
+  style={{
+    textAlign: "center",
+    cursor: "pointer",
+    flex: 1,
+    color:
+      activeTab === "riwayat"
+        ? "#3f51b5"
+        : "#94a3b8",
+    fontWeight:
+      activeTab === "riwayat"
+        ? "bold"
+        : "normal"
+  }}
+>
+  <div style={{ fontSize: "20px" }}>📋</div>
+  <div style={{ fontSize: "12px", marginTop: "2px" }}>
+    Riwayat
+  </div>
+</div>
+{role === "admin" && (
+  <div
+    onClick={() => setActiveTab("admin")}
+    style={{
+      textAlign: "center",
+      cursor: "pointer",
+      flex: 1,
+      color: activeTab === "admin"
+        ? "#3f51b5"
+        : "#94a3b8"
+    }}
+  >
+    <div style={{ fontSize: "20px" }}>⚙️</div>
+    <div style={{ fontSize: "12px" }}>
+      Admin
+    </div>
+  </div>
+)}
         <div onClick={() => setActiveTab("akun")} style={{ textAlign: "center", cursor: "pointer", flex: 1, color: activeTab === "akun" ? "#3f51b5" : "#94a3b8", fontWeight: activeTab === "akun" ? "bold" : "normal" }}>
           <div style={{ fontSize: "20px" }}>👤</div>
           <div style={{ fontSize: "12px", marginTop: "2px" }}>Akun</div>

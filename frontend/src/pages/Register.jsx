@@ -3,10 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const navigate = useNavigate();
+  
+  // 1. Tambahkan role: "mahasiswa" sebagai default di dalam state
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    role: "mahasiswa" 
   });
 
   const handleChange = (e) => {
@@ -37,7 +40,7 @@ export default function Register() {
   return (
     <div style={{
       minHeight: "100vh",
-      backgroundColor: "#3f51b5", // Warna biru indigo biar serasi
+      backgroundColor: "#3f51b5", 
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
@@ -72,7 +75,7 @@ export default function Register() {
           <div>
             <label style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>Email</label>
             <input 
-              type="type" 
+              type="email" 
               name="email" 
               placeholder="Masukkan email" 
               onChange={handleChange} 
@@ -91,6 +94,20 @@ export default function Register() {
               required 
               style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ccc", marginTop: "5px", boxSizing: "border-box" }}
             />
+          </div>
+
+          {/* 2. INPUT PILIHAN ROLE (BIAR GA ERROR PAS DAFTAR) */}
+          <div>
+            <label style={{ fontSize: "14px", fontWeight: "600", color: "#666" }}>Daftar Sebagai</label>
+            <select 
+              name="role" 
+              value={formData.role} 
+              onChange={handleChange}
+              style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ccc", marginTop: "5px", backgroundColor: "white", fontSize: "14px", color: "#333" }}
+            >
+              <option value="mahasiswa">Mahasiswa</option>
+              <option value="dosen">Dosen</option>
+            </select>
           </div>
 
           <button type="submit" style={{

@@ -57,7 +57,9 @@ exports.login = (req, res) => {
                 { expiresIn: "1h" }
             );
 
-            res.json({ message: "Login berhasil", token });
+            res.json({ message: "Login berhasil", token, id: user.id,
+    nama: user.nama,
+    role: user.role });
         }
     );
 };

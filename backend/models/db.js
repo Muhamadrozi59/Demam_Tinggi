@@ -4,8 +4,8 @@ const db = mysql.createConnection({
     host: "127.0.0.1", // 🔥 GANTI INI
     user: "root",
     password: "",
-    database: "db_absensi",
-    port: 3307
+    database: "db_absensi1",
+    port: 3306
 });
 
 db.connect((err) => {

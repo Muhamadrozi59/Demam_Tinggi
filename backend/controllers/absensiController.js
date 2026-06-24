@@ -39,6 +39,28 @@ const getAbsensi = (req, res, next) => {
     }
 };
 
+// READ BY USER (RIWAYAT ABSENSI)
+const getRiwayatByUser = (req, res, next) => {
+    try {
+        const { user_id } = req.params;
+
+        db.query(
+            "SELECT * FROM absensi WHERE user_id = ? ORDER BY tanggal DESC, waktu DESC",
+            [user_id],
+            (err, result) => {
+                if (err) return next(err);
+
+                res.json({
+                    status: "success",
+                    data: result
+                });
+            }
+        );
+    } catch (err) {
+        next(err);
+    }
+};
+
 // UPDATE
 const updateAbsensi = (req, res, next) => {
     try {
@@ -101,6 +123,7 @@ const deleteAbsensi = (req, res, next) => {
 module.exports = {
     createAbsensi,
     getAbsensi,
+    getRiwayatByUser,
     updateAbsensi,
     deleteAbsensi
 };

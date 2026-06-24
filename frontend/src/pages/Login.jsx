@@ -19,12 +19,15 @@ export default function Login() {
         body: JSON.stringify(formData),
       });
       const data = await response.json();
+      console.log("DATA LOGIN:", data);
 
       if (response.ok) {
         alert("Login Berhasil!");
         localStorage.setItem("token", data.token);
         localStorage.setItem("isLogin", "true"); 
-        localStorage.setItem("namaUser", data.username || data.nama || "Mahasiswa");
+        localStorage.setItem("user_id", data.id);
+        localStorage.setItem("namaUser", data.nama);
+        localStorage.setItem("role", data.role);
         
         navigate("/dashboard"); // Setelah sukses login baru ke dashboard
       } else {
