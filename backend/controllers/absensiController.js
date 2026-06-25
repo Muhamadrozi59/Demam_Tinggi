@@ -120,10 +120,37 @@ const deleteAbsensi = (req, res, next) => {
     }
 };
 
+const getAllAbsensi = (req, res, next) => {
+  try {
+    db.query(
+      `
+      SELECT
+        absensi.*,
+        user.nama
+      FROM absensi
+      JOIN user
+      ON absensi.user_id = user.id
+      ORDER BY absensi.id DESC
+      `,
+      (err, result) => {
+        if (err) return next(err);
+
+        res.json({
+          status: "success",
+          data: result
+        });
+      }
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
     createAbsensi,
     getAbsensi,
     getRiwayatByUser,
     updateAbsensi,
-    deleteAbsensi
+    deleteAbsensi,
+    getAllAbsensi
 };

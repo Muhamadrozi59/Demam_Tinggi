@@ -35,23 +35,33 @@ export default function Dashboard() {
 
   setNamaUser(namaDisimpan);
   setRole(roleDisimpan);
-
-  loadRiwayat();
 }, []);
+
+useEffect(() => {
+  if (role) {
+    loadRiwayat();
+  }
+}, [role]);
 
 const loadRiwayat = async () => {
   try {
-    const userId = localStorage.getItem("user_id");
 
-    const response = await fetch(
-      `http://localhost:3000/absensi/riwayat/${userId}`
-    );
+    let url = "";
 
+    if (role === "admin") {
+      url = "http://localhost:3000/absensi/all";
+    } else {
+      const userId = localStorage.getItem("user_id");
+      url = `http://localhost:3000/absensi/riwayat/${userId}`;
+    }
+
+    const response = await fetch(url);
     const result = await response.json();
 
     if (result.status === "success") {
       setRiwayat(result.data);
     }
+
   } catch (error) {
     console.error(error);
   }
@@ -436,7 +446,7 @@ const handleEdit = async (id, statusBaru) => {
     borderRadius: "12px"
   }}
 >
-  <h3>🎓 Manajemen Kehadiran Mahasiswa</h3>
+  <h3>📊 Monitoring Presensi Mahasiswa</h3>
 
   {riwayat.map((item) => (
     <div
@@ -483,7 +493,6 @@ const handleEdit = async (id, statusBaru) => {
       ⏰ {item.waktu}
     </p>
   </div>
-
   
 </div>
 
@@ -610,9 +619,9 @@ const handleEdit = async (id, statusBaru) => {
         : "#94a3b8"
     }}
   >
-    <div style={{ fontSize: "20px" }}>⚙️</div>
+    <div style={{ fontSize: "20px" }}>📊</div>
     <div style={{ fontSize: "12px" }}>
-      Admin
+      Monitoring
     </div>
   </div>
 )}
