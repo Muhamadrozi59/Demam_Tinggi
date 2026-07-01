@@ -1,10 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false); // State untuk swith halaman awal ke form login
   const [formData, setFormData] = useState({ email: "", password: "" });
+
+  const [showNotif, setShowNotif] = useState(false);
+const [notifType, setNotifType] = useState("success");
+const [notifTitle, setNotifTitle] = useState("");
+const [notifMessage, setNotifMessage] = useState("");
+
+useEffect(() => {
+  if (showNotif && notifType === "success") {
+    const timer = setTimeout(() => {
+      setShowNotif(false);
+      navigate("/dashboard");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }
+}, [showNotif, notifType, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,18 +37,24 @@ export default function Login() {
       const data = await response.json();
       console.log("DATA LOGIN:", data);
 
-      if (response.ok) {
-        alert("Login Berhasil!");
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("isLogin", "true"); 
-        localStorage.setItem("user_id", data.id);
-        localStorage.setItem("namaUser", data.nama);
-        localStorage.setItem("role", data.role);
-        
-        navigate("/dashboard"); // Setelah sukses login baru ke dashboard
-      } else {
-        alert("Gagal: " + (data.message || JSON.stringify(data)));
-      }
+      if (!response.ok) {
+  setNotifType("error");
+  setNotifTitle("Login Gagal");
+  setNotifMessage(data.message || "Email atau password salah.");
+  setShowNotif(true);
+  return;
+}
+
+localStorage.setItem("token", data.token);
+localStorage.setItem("isLogin", "true");
+localStorage.setItem("user_id", data.id);
+localStorage.setItem("namaUser", data.nama);
+localStorage.setItem("role", data.role);
+
+setNotifType("success");
+setNotifTitle("Login Berhasil");
+setNotifMessage(`Selamat datang, ${data.nama}!`);
+setShowNotif(true);
     } catch (error) {
       alert("Server backend mati!");
     }
@@ -100,7 +122,72 @@ export default function Login() {
             </button>
           </form>
         </div>
+        {showNotif && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,.45)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 9999
+    }}
+  >
+    <div
+      style={{
+        background: "#fff",
+        width: "400px",
+        borderRadius: "18px",
+        overflow: "hidden",
+        boxShadow: "0 20px 40px rgba(0,0,0,.25)"
+      }}
+    >
+      <div
+        style={{
+          background: notifType === "success" ? "#16A34A" : "#DC2626",
+          color: "#fff",
+          padding: "25px",
+          textAlign: "center"
+        }}
+      >
+        <div style={{ fontSize: "60px" }}>
+          {notifType === "success" ? "✅" : "❌"}
+        </div>
+
+        <h2>{notifTitle}</h2>
       </div>
+
+      <div
+        style={{
+          padding: "30px",
+          textAlign: "center"
+        }}
+      >
+        <p>{notifMessage}</p>
+
+        {notifType === "error" && (
+          <button
+            onClick={() => setShowNotif(false)}
+            style={{
+              marginTop: "20px",
+              padding: "10px 30px",
+              background: "#2563EB",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer"
+            }}
+          >
+            OK
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+      </div>
+      
     );
   }
 

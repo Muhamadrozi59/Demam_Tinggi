@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
@@ -11,6 +11,22 @@ export default function Register() {
   password: "",
   role: "user"
 });
+
+const [showNotif, setShowNotif] = useState(false);
+const [notifType, setNotifType] = useState("success");
+const [notifTitle, setNotifTitle] = useState("");
+const [notifMessage, setNotifMessage] = useState("");
+
+useEffect(() => {
+  if (showNotif && notifType === "success") {
+    const timer = setTimeout(() => {
+      setShowNotif(false);
+      navigate("/login");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }
+}, [showNotif, notifType, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,12 +42,19 @@ export default function Register() {
       });
       const data = await response.json();
 
-      if (response.ok) {
-        alert("Registrasi Berhasil! Silakan Login.");
-        navigate("/login");
-      } else {
-        alert("Gagal: " + (data.message || JSON.stringify(data)));
-      }
+      if (!response.ok) {
+  setNotifType("error");
+  setNotifTitle("Registrasi Gagal");
+  setNotifMessage(data.message || "Registrasi gagal.");
+  setShowNotif(true);
+  return;
+}
+
+setNotifType("success");
+setNotifTitle("Registrasi Berhasil");
+setNotifMessage("Akun berhasil dibuat. Silakan login.");
+setShowNotif(true);
+
     } catch (error) {
       alert("Server backend mati!");
     }
@@ -95,6 +118,72 @@ export default function Register() {
               style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ccc", marginTop: "5px", boxSizing: "border-box" }}
             />
           </div>
+          {showNotif && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,.45)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 9999
+    }}
+  >
+    <div
+      style={{
+        background: "#fff",
+        width: "400px",
+        borderRadius: "18px",
+        overflow: "hidden",
+        boxShadow: "0 20px 40px rgba(0,0,0,.25)"
+      }}
+    >
+      <div
+        style={{
+          background: notifType === "success"
+            ? "#16A34A"
+            : "#DC2626",
+          color: "#fff",
+          padding: "25px",
+          textAlign: "center"
+        }}
+      >
+        <div style={{ fontSize: "60px" }}>
+          {notifType === "success" ? "✅" : "❌"}
+        </div>
+
+        <h2>{notifTitle}</h2>
+      </div>
+
+      <div
+        style={{
+          padding: "30px",
+          textAlign: "center"
+        }}
+      >
+        <p>{notifMessage}</p>
+
+        {notifType === "error" && (
+          <button
+            onClick={() => setShowNotif(false)}
+            style={{
+              marginTop: "20px",
+              padding: "10px 30px",
+              background: "#2563EB",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer"
+            }}
+          >
+            OK
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
           {/* 2. INPUT PILIHAN ROLE (BIAR GA ERROR PAS DAFTAR) */}
           <div>

@@ -17,8 +17,11 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 2000000 }, // Batas 2MB
   fileFilter: (req, file, cb) => {
-    const fileTypes = /jpeg|jpg|png/; // Cuma boleh gambar
-    const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    const fileTypes = /jpeg|jpg|png|pdf/;
+    const extName =
+fileTypes.test(
+path.extname(file.originalname).toLowerCase()
+);
     
     if (extName) {
       cb(null, true);

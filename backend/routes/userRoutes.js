@@ -21,6 +21,11 @@ router.put("/:id", validateUser, userController.updateUser);
 // DELETE user
 router.delete("/:id", userController.deleteUser);
 
+router.get(
+  "/total-mahasiswa",
+  userController.getTotalMahasiswa
+);
+
 router.get("/:id", userController.getUserById);
 
 module.exports = router;

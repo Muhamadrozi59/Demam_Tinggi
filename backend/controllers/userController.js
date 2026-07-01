@@ -140,3 +140,22 @@ exports.uploadFoto = (req, res, next) => {
     },
   );
 };
+
+// TOTAL MAHASISWA
+exports.getTotalMahasiswa = (req, res, next) => {
+
+  db.query(
+    "SELECT COUNT(*) AS total FROM user WHERE role='user'",
+    (err, result) => {
+
+      if (err) return next(err);
+
+      res.status(200).json({
+        status: "success",
+        total: result[0].total
+      });
+
+    }
+  );
+
+};
